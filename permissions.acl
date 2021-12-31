@@ -1,0 +1,184 @@
+/**
+ * New access control file
+ */
+
+rule SystemACL {
+    description:  "System ACL to permit all access"
+    participant: "org.hyperledger.composer.system.Participant"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
+
+rule NetworkAdminUser {
+    description: "Grant business network administrators full access to user resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "**"
+    action: ALLOW
+}
+
+rule NetworkAdminSystem {
+    description: "Grant business network administrators full access to system resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
+
+rule ReadActor {
+    description: "All participants can read all Actors"
+    participant: "org.supplychainminiprojet.*"
+    operation: READ
+    resource: "org.supplychainminiprojet.actor"
+    action: ALLOW
+}
+
+rule ReadProduct {
+    description: "All participants can read its own goods"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: READ
+    resource(v): "org.supplychainminiprojet.Product"
+    condition: (v.owner.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+
+rule ProviderReadActorOrder {
+    description: "All participants can read its own ActorOrder"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: READ
+    resource(v): "org.supplychainminiprojet.ActorOrder"
+    condition: (v.provider.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+rule ProviderUpdateActorOrder {
+    description: "Provider can update its own ActorOrder"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: UPDATE
+    resource(v): "org.supplychainminiprojet.ActorOrder"
+    condition: (v.provider.getIdentifier() == m.getIdentifier() && v.orderStatus != 'DELIVERING')
+    action: ALLOW
+}
+//////
+rule OrdererUpdateComfirmDeliverActorOrder {
+    description: "Orderer can confirm delivery of its own ActorOrder"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: UPDATE
+    resource(v): "org.supplychainminiprojet.ActorOrder"
+    condition: (v.orderer.getIdentifier() == m.getIdentifier() && v.orderStatus == 'DELIVERED')
+    action: ALLOW
+}
+///////
+rule ordererReadActorOrder {
+    description: "All participants can read its own ActorOrder"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: READ
+    resource(v): "org.supplychainminiprojet.ActorOrder"
+    condition: (v.orderer.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+
+rule RuleWithTransaction {
+    description: "Allow all paticipants to access TransferProduct transaction"
+    participant: "org.supplychainminiprojet.*"
+    operation: CREATE
+    resource: "org.supplychainminiprojet.TransferProduct"
+    action: ALLOW
+}
+
+rule ConditionRuleWithTransaction {
+  	description:"Allow all paticipants to transfer its own Product only by TransferProduct"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: UPDATE
+    resource(v): "org.supplychainminiprojet.*"
+    transaction(tx): "org.supplychainminiprojet.TransferProduct"
+    condition: (v.owner.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+
+rule ConditionalRuleWithTransaction2 {
+  	description:"Grant all paticipants to read its own transaction records"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: READ
+    resource(v): "org.supplychainminiprojet.TransferProduct"
+    condition: (v.oldOwner.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+
+rule ConditionalRuleWithTransaction3 {
+  	description:"Grant all participants to read its own transaction records"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: READ
+    resource(v): "org.supplychainminiprojet.TransferProduct"
+    condition: (v.newOwner.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+
+rule ConditionalRuleWithCreation {
+    description: "Grant all participants can create its own resource"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: CREATE
+    resource(v): "org.supplychainminiprojet.Product"
+    condition: (v.owner.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+
+rule ConditionalRulewithCreationOfActorOrder {
+    description:"Allow all paticipants to initiate ActorOrder"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: CREATE
+    resource(v): "org.supplychainminiprojet.ActorOrder"
+    transaction(tx): "org.supplychainminiprojet.InitiateOrder"
+    condition: (v.orderer.getIdentifier() == m.getIdentifier() && v.provider!=v.orderer)
+    action: ALLOW
+}
+
+rule RuleWithInitiateOrderTransaction {
+    description: "Allow all paticipants to access Initiate ActorOrder transaction"
+    participant: "org.supplychainminiprojet.*"
+    operation: CREATE
+    resource: "org.supplychainminiprojet.InitiateOrder"
+    action: ALLOW
+}
+
+rule RuleWithConfirmOrderTransaction {
+    description: "Allow all paticipants to access Confirm ActorOrder transaction"
+    participant: "org.supplychainminiprojet.*"
+    operation: CREATE
+    resource: "org.supplychainminiprojet.ConfirmOrder"
+    action: ALLOW
+}
+
+rule RuleWithDeliverOrderTransaction {
+    description: "Allow all paticipants to access Deliver ActorOrder transaction"
+    participant: "org.supplychainminiprojet.*"
+    operation: CREATE
+    resource: "org.supplychainminiprojet.DeliverOrder"
+    action: ALLOW
+}
+rule RuleWithConfirmDeliverOrderTransaction {
+    description: "Allow all paticipants to access ConfirmDeliver ActorOrder transaction"
+    participant: "org.supplychainminiprojet.*"
+    operation: CREATE
+    resource: "org.supplychainminiprojet.ConfirmDeliverOrder"
+    action: ALLOW
+}
+
+
+rule ProviderCanReadTransaction {
+  	description:"Grant all paticipants to read its own transaction records"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: READ
+    resource(v): "org.supplychainminiprojet.InitiateOrder"
+    condition: (v.provider.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+
+rule OrdererCanReadTransaction {
+  	description:"Grant all participants to read its own transaction records"
+    participant(m): "org.supplychainminiprojet.*"
+    operation: READ
+    resource(v): "org.supplychainminiprojet.InitiateOrder"
+    condition: (v.orderer.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
