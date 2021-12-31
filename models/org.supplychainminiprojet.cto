@@ -1,0 +1,122 @@
+namespace org.supplychainminiprojet
+
+
+enum OrderStatus {
+    o INITIATED
+    o CONFIRMED
+    o DELIVERING
+    o DELIVERED
+}
+
+concept Trace {
+    o DateTime timestamp
+    o Address location
+    --> actor holder
+}
+concept Address {
+    o String country 
+    o String city 
+    o String street optional
+    o String latitude optional
+    o String longitude optional
+    
+}
+
+// ASSET
+concept Order{
+    o String assetName optional
+    o String assetQuantity optional
+}
+asset ActorOrder identified by orderId {
+    o String orderId
+    o Order orderdetails
+    o OrderStatus orderStatus optional
+    --> actor orderer
+    --> actor provider
+}
+asset Product identified by productId {
+    o String productId
+    o String name
+    o String description optional
+    o Trace[] trace
+    --> ActorOrder purchaseOrder optional
+    --> actor owner
+    --> actor provider
+  
+}
+
+
+
+// ACTORS
+abstract participant actor {
+    
+    o String name
+    o Address address
+}
+
+participant Supplier identified by actorid extends actor {
+    o String actorid
+}
+
+participant Manufacturer identified by actorid extends actor {
+    o String actorid
+   
+}
+
+participant Distributor identified by actorid extends actor {
+    o String actorid
+    
+}
+
+participant Customer identified by actorid extends actor {
+    o String actorid
+}
+
+// TRANSCTIONS
+
+transaction InitiateOrder {
+    o String orderId
+    o Order orderdetails
+    --> actor orderer optional
+    --> actor provider
+}
+
+transaction ConfirmOrder {
+    --> ActorOrder order
+}
+
+transaction DeliverOrder {
+    --> ActorOrder order
+}
+
+transaction ConfirmDeliverOrder {
+    --> ActorOrder order
+}
+
+
+
+transaction TransferProduct {
+    --> Product product
+    --> actor provider
+    --> actor newOwner
+    --> ActorOrder purchaseOrder 
+    o Address shippingLocation
+
+}
+
+transaction Setup {
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
